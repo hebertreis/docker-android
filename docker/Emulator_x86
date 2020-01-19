@@ -11,13 +11,13 @@ WORKDIR /root
 # Polyverse
 # https://polyverse.io/how-it-works/
 #===========
-ARG TOKEN=xxx
+#ARG TOKEN=xxx
 
-RUN curl -s https://sh.polyverse.io | sh -s install ${TOKEN}; \
-    if [ $? -eq 0 ]; then \
-      apt -y update && \
-      apt-get -y install --reinstall $(dpkg --get-selections | awk '{print $1}'); \
-    fi
+#RUN curl -s https://sh.polyverse.io | sh -s install ${TOKEN}; \
+#    if [ $? -eq 0 ]; then \
+#      apt -y update && \
+#      apt-get -y install --reinstall $(dpkg --get-selections | awk '{print $1}'); \
+#    fi
 
 #==================
 # General Packages
@@ -60,6 +60,7 @@ RUN curl -s https://sh.polyverse.io | sh -s install ${TOKEN}; \
 # libvirt-bin
 # ubuntu-vm-builder
 # bridge-utils
+# v4l2loopback for virtualcamera using ffmpeg
 #==================
 ADD docker/configs/sources1810.list /etc/apt/sources.list.d/
 ADD docker/configs/x11vnc.pref /etc/apt/preferences.d/
@@ -79,8 +80,17 @@ RUN apt-get -qqy update && apt-get -qqy install --no-install-recommends \
     libvirt-bin \
     ubuntu-vm-builder \
     bridge-utils \
+    v4l2loopback-* \
  && apt clean all \
  && rm -rf /var/lib/apt/lists/*
+ 
+ #=======
+# V4L2LOOPBACK
+# Enable virtualcamera
+# https://github.com/umlaeute/v4l2loopback
+#=======
+
+RUN modprobe -r v4l2loopback
 
 #=======
 # noVNC
@@ -103,9 +113,9 @@ RUN  wget -nv -O noVNC.zip "https://github.com/kanaka/noVNC/archive/${NOVNC_SHA}
 # Install SDK packages
 #======================
 ARG ANDROID_VERSION=5.0.1
-ARG API_LEVEL=21
-ARG PROCESSOR=x86
-ARG SYS_IMG=x86
+ARG API_LEVEL=24
+ARG PROCESSOR=armeabi-v7a
+ARG SYS_IMG=armeabi-v7a
 ARG IMG_TYPE=google_apis
 ARG BROWSER=android
 ARG CHROME_DRIVER=2.40
@@ -145,6 +155,7 @@ RUN wget -nv -O chrome.zip "https://chromedriver.storage.googleapis.com/${CHROME
 #================================================================
 Run wget -nv -O google_play_services.apk "https://www.apklinker.com/wp-content/uploads/uploaded_apk/5b5155e5ef4f8/com.google.android.gms_${GOOGLE_PLAY_SERVICE}-020700-204998136_12874013_MinAPI21_(x86)(nodpi)_apklinker.com.apk"
 Run wget -nv -O google_play_store.apk "https://www.apklinker.com/wp-content/uploads/uploaded_apk/5b632b1164e31/com.android.vending_${GOOGLE_PLAY_STORE}-all-0-PR-206665793_81105000_MinAPI16_(armeabi,armeabi-v7a,mips,mips64,x86,x86_64)(240,320,480dpi)_apklinker.com.apk"
+Run wget -nv -O whatsapp_business.apk "https://www.apklinker.com/wp-content/uploads/uploaded_apk/5dd5720c495b3/com.whatsapp.w4b_2.19.124_661_MinAPI15_(armeabi-v7a)(nodpi)_apklinker.com.apk"
 
 #================================================
 # noVNC Default Configurations
